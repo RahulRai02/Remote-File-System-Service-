@@ -188,14 +188,18 @@ void TakeInput(int sockfd, int policy)
 int main(int argc, char *argv[])
 {
     int policy;
-    if (argc == 2)
+    char *ip;
+    int port;
+    if (argc == 4)
     {
-        policy = atoi(argv[1]);
+            policy = atoi(argv[1]);
+    ip = argv[2];
+    port = atoi(argv[3]);
+        printf("Error in giving the arguments. Expected arguments in order: Executable, Policy, Ip, Port");
     }
 
-    char *ip = "127.0.0.1";
-    int port = 6001;
-
+    // char *ip = "127.0.0.1";
+    // int port = 6001;
     int sock;
     struct sockaddr_in addr;
     socklen_t addr_size;
