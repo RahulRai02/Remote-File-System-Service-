@@ -1,0 +1,7 @@
+Client
+Client.c
+DownloadFromServerSide.txt
+ListFiles.txt
+f1.txt
+f2.txt
+f3.txt

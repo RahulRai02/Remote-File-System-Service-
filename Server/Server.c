@@ -31,19 +31,47 @@ void Execute_CD_Server(char *DestinationDir, int server_sock, int policy)
 void Execute_DWD_Server(FILE *fp, int sockfd, int client_sock, int policy)
 {
     int n;
-    char buffer[SIZE];
-    bzero(buffer, SIZE);
 
-    while (fgets(buffer, SIZE, fp) != NULL)
+    // while (fgets(buffer, SIZE, fp) != NULL)
+    // {
+    //     encryptData(buffer, policy);
+    //     if (send(client_sock, buffer, sizeof(buffer), 0) == -1)
+    //     {
+    //         perror("[-]Error in sending file from Server. Demanaded DWD\n");
+    //         exit(1);
+    //     }
+    //     bzero(buffer, SIZE);
+    // }
+
+    int flag = 0;
+    while (1)
     {
-        encryptData(buffer, policy);
-        if (send(client_sock, buffer, sizeof(buffer), 0) == -1)
-        {
-            perror("[-]Error in sending file from Server. Demanaded DWD\n");
-            exit(1);
-        }
+        char buffer[SIZE];
         bzero(buffer, SIZE);
+
+        for (int i = 0; i < SIZE; i++)
+        {
+            buffer[i] = fgetc(fp);
+            if (buffer[i] == EOF)
+            {
+                buffer[i] = EOF;
+                flag = 1;
+                break;
+            }
+        }
+        int send_try = send(client_sock, buffer, SIZE, 0);
+        if (send_try == -1)
+        {
+            return;
+        }
+
+        if (flag)
+        {
+            break;
+        }
     }
+    fclose(fp);
+    return;
 }
 
 // For UPD Command
@@ -63,20 +91,52 @@ void Execute_UPD_Server(int client_sock, int policy)
         exit(1);
     }
     // Receive file data inside a buffer from Client side. Store buffer content into newly created file.
-    int n;
+    // int n;
+    // while (1)
+    // {
+    //     n = recv(client_sock, buffer, SIZE, 0);
+    //     if (n <= 0)
+    //     {
+    //         break;
+    //         return;
+    //     }
+    //     decryptData(buffer, policy);
+    //     fprintf(fp, "%s ", buffer);
+    //     bzero(buffer, SIZE);
+    // }
+    int flag = 0; /* File read finished or not. */
     while (1)
     {
-        n = recv(client_sock, buffer, SIZE, 0);
-        if (n <= 0)
+        /* Clear the buffer. */
+        for (int i = 0; i < SIZE; i++)
         {
-            break;
+            buffer[i] = '\0';
+        }
+
+        /* Receive file. */
+        int recv_try = recv(client_sock, buffer, SIZE, 0);
+        if (recv_try == -1)
+        {
             return;
         }
-        decryptData(buffer, policy);
-        fprintf(fp, "%s ", buffer);
-        bzero(buffer, SIZE);
-    }
 
+        /* Fill the buffer. */
+        for (int i = 0; i < SIZE; i++)
+        {
+            if (buffer[i] == EOF)
+            {
+                flag = 1;
+                break;
+            }
+            fputc(buffer[i], fp);
+        }
+
+        if (flag)
+        {
+            break;
+        }
+    }
+    fclose(fp);
     return;
 }
 
@@ -127,11 +187,36 @@ void Execute_LS_Server(int server_sock, int client_sock, int policy)
     }
     int n;
     char data[SIZE] = {0};
-
-    while (fgets(data, SIZE, fp1) != NULL)
+    while (1)
     {
-        send(client_sock, data, strlen(data), 0);
+        int flag = 0;
+        for (int i = 0; i < SIZE; i++)
+        {
+            data[i] = fgetc(fp1);
+            if (data[i] == EOF)
+            {
+                data[i] = EOF;
+                flag = 1;
+                break;
+            }
+        }
+        int send_try = send(client_sock, data, SIZE, 0);
+        if (send_try == -1)
+        {
+            return;
+        }
+
+        if (1)
+        {
+            break;
+        }
     }
+    fclose(fp1);
+
+    // while (fgets(data, SIZE, fp1) != NULL)
+    // {
+    //     send(client_sock, data, strlen(data), 0);
+    // }
 
     return;
 }
@@ -143,13 +228,12 @@ int main(int argc, char *argv[])
     if (argc == 3)
     {
         policy = atoi(argv[1]);
-    port = atoi(argv[2]);
-        printf("Expected Arguments: Executable, policy, port");
+        port = atoi(argv[2]);
+        // printf("Expected Arguments: Executable, policy, port");
     }
-    
+
     // char *ip = "127.0.0.1";
     // int port = 6001;
-    
 
     int server_sock;
     int client_sock;
@@ -182,22 +266,22 @@ int main(int argc, char *argv[])
     printf("[+]Bind to the port number: %d\n", port);
     char inputgiven[1024];
 
+    listen(server_sock, 5);
+    printf("Listening...\n");
+    addr_size = sizeof(client_addr);
+    client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &addr_size);
+    printf("[+]Client connected.\n");
+
     while (1)
     {
-        listen(server_sock, 5);
-        printf("Listening...\n");
-        addr_size = sizeof(client_addr);
-        client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &addr_size);
-        printf("[+]Client connected.\n");
-
         bzero(buffer, 1024);
         recv(client_sock, buffer, sizeof(buffer), 0);
-        printf("Client: %s\n", buffer);
+        // printf("Client: %s\n", buffer);
         strncpy(inputgiven, buffer, 64);
 
         bzero(buffer, 1024);
         strcpy(buffer, " ");
-        printf("Server: %s\n", buffer);
+        // printf("Server: %s\n", buffer);
         send(client_sock, buffer, strlen(buffer), 0);
 
         if (strncmp(inputgiven, "CWD", 3) == 0)
@@ -206,13 +290,15 @@ int main(int argc, char *argv[])
         }
         else if (strncmp(inputgiven, "LS", 2) == 0)
         {
+            printf("Entered into LS Server\n");
             Execute_LS_Server(server_sock, client_sock, policy);
+            // prin
         }
         else if (strncmp(inputgiven, "UPD", 3) == 0)
         {
 
             Execute_UPD_Server(client_sock, policy);
-            break;
+            // break;
             printf("[+]Data written in the file successfully.\n");
         }
         else if (strncmp(inputgiven, "DWD", 3) == 0)
@@ -231,7 +317,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             Execute_DWD_Server(fp, server_sock, client_sock, policy);
-            break;
+            // break;
         }
         else if (strncmp(inputgiven, "CD", 2) == 0)
         {
@@ -243,9 +329,9 @@ int main(int argc, char *argv[])
 
             Execute_CD_Server(DestinationDir, server_sock, policy);
         }
-        close(client_sock);
-        printf("[+]Client disconnected.\n\n");
     }
+    close(client_sock);
+    printf("[+]Client disconnected.\n\n");
 
     return 0;
 }

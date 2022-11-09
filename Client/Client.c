@@ -32,18 +32,51 @@ void Execute_DWD(int sockfd, int policy)
         exit(1);
     }
 
+    // while (1)
+    // {
+    //     n = recv(sockfd, buffer, SIZE, 0);
+    //     if (n <= 0)
+    //     {
+    //         break;
+    //         return;
+    //     }
+    //     decryptData(buffer, policy);
+    //     fprintf(fp, "%s", buffer);
+    //     bzero(buffer, SIZE);
+    // }
+    int flag = 0; /* File read finished or not. */
     while (1)
     {
-        n = recv(sockfd, buffer, SIZE, 0);
-        if (n <= 0)
+        /* Clear the buffer. */
+        for (int i = 0; i < SIZE; i++)
         {
-            break;
+            buffer[i] = '\0';
+        }
+
+        /* Receive file. */
+        int recv_try = recv(sockfd, buffer, SIZE, 0);
+        if (recv_try == -1)
+        {
             return;
         }
-        decryptData(buffer, policy);
-        fprintf(fp, "%s", buffer);
-        bzero(buffer, SIZE);
+
+        /* Fill the buffer. */
+        for (int i = 0; i < SIZE; i++)
+        {
+            if (buffer[i] == EOF)
+            {
+                flag = 1;
+                break;
+            }
+            fputc(buffer[i], fp);
+        }
+
+        if (flag)
+        {
+            break;
+        }
     }
+    fclose(fp);
     return;
 }
 
@@ -53,17 +86,46 @@ void Execute_UPD(FILE *fp, int sockfd, int policy)
 
     int n;
     char data[SIZE] = {0};
-    
-    while (fgets(data, SIZE, fp) != NULL)
+
+    // while (fgets(data, SIZE, fp) != NULL)
+    // {
+    //     encryptData(data, policy);
+    //     if (send(sockfd, data, sizeof(data), 0) == -1)
+    //     {
+    //         perror("[-]Error in uploading file\n");
+    //         exit(1);
+    //     };
+    //     bzero(data, SIZE);
+    // }
+
+    int flag = 0;
+    while (1)
     {
-        encryptData(data, policy);
-        if (send(sockfd, data, sizeof(data), 0) == -1)
+        char buffer[SIZE];
+        bzero(buffer, SIZE);
+
+        for (int i = 0; i < SIZE; i++)
         {
-            perror("[-]Error in uploading file\n");
-            exit(1);
-        };
-        bzero(data, SIZE);
+            buffer[i] = fgetc(fp);
+            if (buffer[i] == EOF)
+            {
+                buffer[i] = EOF;
+                flag = 1;
+                break;
+            }
+        }
+        int send_try = send(sockfd, buffer, SIZE, 0);
+        if (send_try == -1)
+        {
+            return;
+        }
+
+        if (flag)
+        {
+            break;
+        }
     }
+    fclose(fp);
 }
 
 // For listing files(LS COMMAND)
@@ -75,18 +137,18 @@ void Execute_LS(int sockfd, int policy)
     send(sockfd, buffer, strlen(buffer), 0);
 
     int n;
-    while (1)
-    {
-        n = recv(sockfd, buffer, sizeof(buffer), 0);
-        
-        if (n <= 0)
-        {
-            break;
-            return;
-        }
-    }
+    // while (1)
+    // {
+    n = recv(sockfd, buffer, sizeof(buffer), 0);
 
-    printf("List of files are : %s\n", buffer);
+    // if (n <= 0)
+    // {
+    //     break;
+    //     return;
+    // }
+    // }
+
+    printf("List of files are :\n%s", buffer);
 }
 
 // For Fetching Current Working Directory.
@@ -100,16 +162,16 @@ void Execute_CWD(int sockfd, int policy)
     // printf("Message sent from Client\n");
 
     int n;
-    while (1)
-    {
-        n = recv(sockfd, buffer, sizeof(buffer), 0);
-        if (n <= 0)
-        {
-            break;
-            return;
-        }
-    }
-   
+    // while (1)
+    // {
+    n = recv(sockfd, buffer, sizeof(buffer), 0);
+    // if (n <= 0)
+    // {
+    //     break;
+    //     return;
+    // }
+    // }
+
     decryptData(buffer, policy);
     printf("Current Directory is: %s\n", buffer);
     return;
@@ -137,7 +199,7 @@ void TakeInput(int sockfd, int policy)
 
         bzero(buffer, 1024);
         recv(sockfd, buffer, sizeof(buffer), 0);
-        printf("Message received from Server: %s\n", buffer);
+        // printf("Message received from Server: %s\n", buffer);
 
         if (strncmp(input, "CWD", 3) == 0)
         {
@@ -169,20 +231,20 @@ void TakeInput(int sockfd, int policy)
         {
 
             Execute_DWD(sockfd, policy);
-            break;
+            // break;
         }
         else if (strncmp(input, "CD", 2) == 0)
         {
 
             Execute_CD(sockfd, policy);
         }
-        else if (strncmp(input, "exit", 4) == 0)
+        else if (strncmp(input, "EXIT", 4) == 0)
         {
             exit(1);
         }
-        close(sockfd);
-        printf("Disconnected from the server.\n");
     }
+    close(sockfd);
+    printf("Disconnected from the server.\n");
 }
 
 int main(int argc, char *argv[])
@@ -192,10 +254,10 @@ int main(int argc, char *argv[])
     int port;
     if (argc == 4)
     {
-            policy = atoi(argv[1]);
-    ip = argv[2];
-    port = atoi(argv[3]);
-        printf("Error in giving the arguments. Expected arguments in order: Executable, Policy, Ip, Port");
+        policy = atoi(argv[1]);
+        ip = argv[2];
+        port = atoi(argv[3]);
+        // printf("Error in giving the arguments. Expected arguments in order: Executable, Policy, Ip, Port");
     }
 
     // char *ip = "127.0.0.1";

@@ -1,7 +1,0 @@
-Dummy
-ListFiles.txt
-Serv1.txt
-Serv2.txt
-Serv3.txt
-Server
-Server.c
