@@ -44,17 +44,17 @@ void Execute_DWD_Server(FILE *fp, int sockfd, int client_sock, int policy)
     // }
 
     int flag = 0;
-    while (1)
-    {
+    // while (1)
+    // {
         char buffer[SIZE];
         bzero(buffer, SIZE);
 
         for (int i = 0; i < SIZE; i++)
         {
             buffer[i] = fgetc(fp);
-            if (buffer[i] == EOF)
+            if (buffer[i] == '\0')
             {
-                buffer[i] = EOF;
+                buffer[i] = '\0';
                 flag = 1;
                 break;
             }
@@ -65,11 +65,11 @@ void Execute_DWD_Server(FILE *fp, int sockfd, int client_sock, int policy)
             return;
         }
 
-        if (flag)
-        {
-            break;
-        }
-    }
+    //     if (flag)
+    //     {
+    //         break;
+    //     }
+    // }
     fclose(fp);
     return;
 }
@@ -105,8 +105,8 @@ void Execute_UPD_Server(int client_sock, int policy)
     //     bzero(buffer, SIZE);
     // }
     int flag = 0; /* File read finished or not. */
-    while (1)
-    {
+    // while (1)
+    // {
         /* Clear the buffer. */
         for (int i = 0; i < SIZE; i++)
         {
@@ -123,7 +123,7 @@ void Execute_UPD_Server(int client_sock, int policy)
         /* Fill the buffer. */
         for (int i = 0; i < SIZE; i++)
         {
-            if (buffer[i] == EOF)
+            if (buffer[i] == '\0')
             {
                 flag = 1;
                 break;
@@ -131,11 +131,11 @@ void Execute_UPD_Server(int client_sock, int policy)
             fputc(buffer[i], fp);
         }
 
-        if (flag)
-        {
-            break;
-        }
-    }
+    //     if (flag)
+    //     {
+    //         break;
+    //     }
+    // }
     fclose(fp);
     return;
 }
@@ -150,19 +150,20 @@ void Execute_CWD_Server(int server_sock, int client_sock, int policy)
     int n;
     if (getcwd(cwd, sizeof(cwd)) != NULL)
     {
-        while (1)
-        {
+        // while (1)
+        // {
             n = recv(server_sock, cwd, SIZE, 0);
-            if (n <= 0)
-            {
-                break;
-                return;
-            }
-        }
+            // if (n <= 0)
+            // {
+            //     break;
+            //     // return;
+            // }
+        // }
     }
 
     encryptData(cwd, policy);
     send(client_sock, cwd, strlen(cwd), 0);
+    return;
 }
 
 // LS
@@ -187,30 +188,31 @@ void Execute_LS_Server(int server_sock, int client_sock, int policy)
     }
     int n;
     char data[SIZE] = {0};
-    while (1)
-    {
+    // while (1)
+    // {
         int flag = 0;
         for (int i = 0; i < SIZE; i++)
         {
             data[i] = fgetc(fp1);
-            if (data[i] == EOF)
+            if (data[i] == '\0')
             {
-                data[i] = EOF;
+                data[i] = '\0';
                 flag = 1;
                 break;
             }
         }
+
         int send_try = send(client_sock, data, SIZE, 0);
         if (send_try == -1)
         {
             return;
         }
 
-        if (1)
-        {
-            break;
-        }
-    }
+    //     if (1)
+    //     {
+    //         break;
+    //     }
+    // }
     fclose(fp1);
 
     // while (fgets(data, SIZE, fp1) != NULL)

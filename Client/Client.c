@@ -45,8 +45,8 @@ void Execute_DWD(int sockfd, int policy)
     //     bzero(buffer, SIZE);
     // }
     int flag = 0; /* File read finished or not. */
-    while (1)
-    {
+    // while (1)
+    // {
         /* Clear the buffer. */
         for (int i = 0; i < SIZE; i++)
         {
@@ -63,7 +63,7 @@ void Execute_DWD(int sockfd, int policy)
         /* Fill the buffer. */
         for (int i = 0; i < SIZE; i++)
         {
-            if (buffer[i] == EOF)
+            if (buffer[i] == '\0')
             {
                 flag = 1;
                 break;
@@ -71,11 +71,11 @@ void Execute_DWD(int sockfd, int policy)
             fputc(buffer[i], fp);
         }
 
-        if (flag)
-        {
-            break;
-        }
-    }
+        // if (flag)
+        // {
+        //     break;
+        // }
+    // }
     fclose(fp);
     return;
 }
@@ -99,17 +99,17 @@ void Execute_UPD(FILE *fp, int sockfd, int policy)
     // }
 
     int flag = 0;
-    while (1)
-    {
+    // while (1)
+    // {
         char buffer[SIZE];
         bzero(buffer, SIZE);
 
         for (int i = 0; i < SIZE; i++)
         {
             buffer[i] = fgetc(fp);
-            if (buffer[i] == EOF)
+            if (buffer[i] == '\0')
             {
-                buffer[i] = EOF;
+                buffer[i] = '\0 ';
                 flag = 1;
                 break;
             }
@@ -120,11 +120,11 @@ void Execute_UPD(FILE *fp, int sockfd, int policy)
             return;
         }
 
-        if (flag)
-        {
-            break;
-        }
-    }
+    //     if (flag)
+    //     {
+    //         break;
+    //     }
+    // }
     fclose(fp);
 }
 
@@ -149,6 +149,7 @@ void Execute_LS(int sockfd, int policy)
     // }
 
     printf("List of files are :\n%s", buffer);
+    return;
 }
 
 // For Fetching Current Working Directory.
@@ -174,7 +175,7 @@ void Execute_CWD(int sockfd, int policy)
 
     decryptData(buffer, policy);
     printf("Current Directory is: %s\n", buffer);
-    return;
+    // return;
 }
 
 // Take input
