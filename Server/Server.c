@@ -43,9 +43,6 @@ void Execute_DWD_Server(FILE *fp, int sockfd, int client_sock, int policy)
     //     bzero(buffer, SIZE);
     // }
 
-    int flag = 0;
-    // while (1)
-    // {
         char buffer[SIZE];
         bzero(buffer, SIZE);
 
@@ -55,21 +52,15 @@ void Execute_DWD_Server(FILE *fp, int sockfd, int client_sock, int policy)
             if (buffer[i] == '\0')
             {
                 buffer[i] = '\0';
-                flag = 1;
                 break;
             }
         }
-        int send_try = send(client_sock, buffer, SIZE, 0);
-        if (send_try == -1)
+        int sendBuf = send(client_sock, buffer, SIZE, 0);
+        if (sendBuf == -1)
         {
             return;
         }
 
-    //     if (flag)
-    //     {
-    //         break;
-    //     }
-    // }
     fclose(fp);
     return;
 }
@@ -90,52 +81,29 @@ void Execute_UPD_Server(int client_sock, int policy)
         perror("[-]Error in writing into file. Demanded UPD.\n");
         exit(1);
     }
-    // Receive file data inside a buffer from Client side. Store buffer content into newly created file.
-    // int n;
-    // while (1)
-    // {
-    //     n = recv(client_sock, buffer, SIZE, 0);
-    //     if (n <= 0)
-    //     {
-    //         break;
-    //         return;
-    //     }
+
     //     decryptData(buffer, policy);
-    //     fprintf(fp, "%s ", buffer);
-    //     bzero(buffer, SIZE);
-    // }
-    int flag = 0; /* File read finished or not. */
-    // while (1)
-    // {
-        /* Clear the buffer. */
+
         for (int i = 0; i < SIZE; i++)
         {
             buffer[i] = '\0';
         }
 
-        /* Receive file. */
-        int recv_try = recv(client_sock, buffer, SIZE, 0);
-        if (recv_try == -1)
+        int recvFileBuf = recv(client_sock, buffer, SIZE, 0);
+        if (recvFileBuf == -1)
         {
             return;
         }
 
-        /* Fill the buffer. */
         for (int i = 0; i < SIZE; i++)
         {
             if (buffer[i] == '\0')
             {
-                flag = 1;
                 break;
             }
             fputc(buffer[i], fp);
         }
 
-    //     if (flag)
-    //     {
-    //         break;
-    //     }
-    // }
     fclose(fp);
     return;
 }
@@ -146,19 +114,12 @@ void Execute_CWD_Server(int server_sock, int client_sock, int policy)
     char cwd[SIZE];
     bzero(cwd, SIZE);
     recv(server_sock, cwd, sizeof(cwd), 0);
-    // decryptData(cwd, policy);
+
     int n;
     if (getcwd(cwd, sizeof(cwd)) != NULL)
     {
-        // while (1)
-        // {
             n = recv(server_sock, cwd, SIZE, 0);
-            // if (n <= 0)
-            // {
-            //     break;
-            //     // return;
-            // }
-        // }
+
     }
 
     encryptData(cwd, policy);
@@ -186,41 +147,23 @@ void Execute_LS_Server(int server_sock, int client_sock, int policy)
         perror("[-]Error in reading file.");
         exit(1);
     }
-    int n;
+
     char data[SIZE] = {0};
-    // while (1)
-    // {
-        int flag = 0;
         for (int i = 0; i < SIZE; i++)
         {
             data[i] = fgetc(fp1);
             if (data[i] == '\0')
             {
                 data[i] = '\0';
-                flag = 1;
                 break;
             }
         }
-
-        int send_try = send(client_sock, data, SIZE, 0);
-        if (send_try == -1)
+        int sendBuf = send(client_sock, data, SIZE, 0);
+        if (sendBuf == -1)
         {
             return;
         }
-
-    //     if (1)
-    //     {
-    //         break;
-    //     }
-    // }
     fclose(fp1);
-
-    // while (fgets(data, SIZE, fp1) != NULL)
-    // {
-    //     send(client_sock, data, strlen(data), 0);
-    // }
-
-    return;
 }
 
 int main(int argc, char *argv[])
@@ -292,7 +235,7 @@ int main(int argc, char *argv[])
         }
         else if (strncmp(inputgiven, "LS", 2) == 0)
         {
-            printf("Entered into LS Server\n");
+            // printf("Entered into LS Server\n");
             Execute_LS_Server(server_sock, client_sock, policy);
             // prin
         }
@@ -301,7 +244,7 @@ int main(int argc, char *argv[])
 
             Execute_UPD_Server(client_sock, policy);
             // break;
-            printf("[+]Data written in the file successfully.\n");
+            // printf("[+]Data written in the file successfully.\n");
         }
         else if (strncmp(inputgiven, "DWD", 3) == 0)
         {

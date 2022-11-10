@@ -31,51 +31,42 @@ void Execute_DWD(int sockfd, int policy)
         perror("[-]Error in writing file for DWD");
         exit(1);
     }
-
-    // while (1)
-    // {
-    //     n = recv(sockfd, buffer, SIZE, 0);
-    //     if (n <= 0)
-    //     {
-    //         break;
-    //         return;
-    //     }
-    //     decryptData(buffer, policy);
-    //     fprintf(fp, "%s", buffer);
-    //     bzero(buffer, SIZE);
-    // }
+/*
+    while (1)
+    {
+        n = recv(sockfd, buffer, SIZE, 0);
+        if (n <= 0)
+        {
+            break;
+            return;
+        }
+        decryptData(buffer, policy);
+        fprintf(fp, "%s", buffer);
+        bzero(buffer, SIZE);
+    }
+    */
     int flag = 0; /* File read finished or not. */
-    // while (1)
-    // {
-        /* Clear the buffer. */
+  
         for (int i = 0; i < SIZE; i++)
         {
             buffer[i] = '\0';
         }
 
-        /* Receive file. */
-        int recv_try = recv(sockfd, buffer, SIZE, 0);
-        if (recv_try == -1)
+        int recvBuf = recv(sockfd, buffer, SIZE, 0);
+        if (recvBuf == -1)
         {
             return;
         }
 
-        /* Fill the buffer. */
         for (int i = 0; i < SIZE; i++)
         {
             if (buffer[i] == '\0')
             {
-                flag = 1;
                 break;
             }
             fputc(buffer[i], fp);
         }
 
-        // if (flag)
-        // {
-        //     break;
-        // }
-    // }
     fclose(fp);
     return;
 }
@@ -86,21 +77,19 @@ void Execute_UPD(FILE *fp, int sockfd, int policy)
 
     int n;
     char data[SIZE] = {0};
+    /*
+    while (fgets(data, SIZE, fp) != NULL)
+    {
+        encryptData(data, policy);
+        if (send(sockfd, data, sizeof(data), 0) == -1)
+        {
+            perror("[-]Error in uploading file\n");
+            exit(1);
+        };
+        bzero(data, SIZE);
+    }
+    */
 
-    // while (fgets(data, SIZE, fp) != NULL)
-    // {
-    //     encryptData(data, policy);
-    //     if (send(sockfd, data, sizeof(data), 0) == -1)
-    //     {
-    //         perror("[-]Error in uploading file\n");
-    //         exit(1);
-    //     };
-    //     bzero(data, SIZE);
-    // }
-
-    int flag = 0;
-    // while (1)
-    // {
         char buffer[SIZE];
         bzero(buffer, SIZE);
 
@@ -109,22 +98,15 @@ void Execute_UPD(FILE *fp, int sockfd, int policy)
             buffer[i] = fgetc(fp);
             if (buffer[i] == '\0')
             {
-                buffer[i] = '\0 ';
-                flag = 1;
+                buffer[i] = '\0';
                 break;
             }
         }
-        int send_try = send(sockfd, buffer, SIZE, 0);
-        if (send_try == -1)
+        int sendFileBuf = send(sockfd, buffer, SIZE, 0);
+        if (sendFileBuf == -1)
         {
             return;
         }
-
-    //     if (flag)
-    //     {
-    //         break;
-    //     }
-    // }
     fclose(fp);
 }
 
@@ -137,19 +119,9 @@ void Execute_LS(int sockfd, int policy)
     send(sockfd, buffer, strlen(buffer), 0);
 
     int n;
-    // while (1)
-    // {
     n = recv(sockfd, buffer, sizeof(buffer), 0);
 
-    // if (n <= 0)
-    // {
-    //     break;
-    //     return;
-    // }
-    // }
-
     printf("List of files are :\n%s", buffer);
-    return;
 }
 
 // For Fetching Current Working Directory.
@@ -163,16 +135,8 @@ void Execute_CWD(int sockfd, int policy)
     // printf("Message sent from Client\n");
 
     int n;
-    // while (1)
-    // {
+  
     n = recv(sockfd, buffer, sizeof(buffer), 0);
-    // if (n <= 0)
-    // {
-    //     break;
-    //     return;
-    // }
-    // }
-
     decryptData(buffer, policy);
     printf("Current Directory is: %s\n", buffer);
     // return;
@@ -258,7 +222,7 @@ int main(int argc, char *argv[])
         policy = atoi(argv[1]);
         ip = argv[2];
         port = atoi(argv[3]);
-        // printf("Error in giving the arguments. Expected arguments in order: Executable, Policy, Ip, Port");
+       
     }
 
     // char *ip = "127.0.0.1";
